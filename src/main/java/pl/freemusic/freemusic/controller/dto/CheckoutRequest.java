@@ -25,6 +25,7 @@ public class CheckoutRequest {
     }
 
     public static class CartItemDTO {
-        public Long albumId;
+        public Long albumId;     // opcjonalnie
+        public String albumSlug; // preferowane, stabilne (np. "italian2")
     }
 }

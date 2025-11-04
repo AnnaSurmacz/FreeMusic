@@ -1,11 +1,15 @@
 package pl.freemusic.freemusic.model;
 
 import jakarta.persistence.*;
+
 import java.math.BigDecimal;
 import java.util.UUID;
 
 @Entity
-@Table(name = "PURCHASE_ITEMS")
+@Table(
+        name = "PURCHASE_ITEMS",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"purchase_id", "albumId"})
+)
 public class PurchaseItem {
 
     @Id
@@ -43,91 +47,36 @@ public class PurchaseItem {
 
     // ==== GETTERY i SETTERY ====
 
-    public Long getId() {
-        return id;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public Purchase getPurchase() { return purchase; }
+    public void setPurchase(Purchase purchase) { this.purchase = purchase; }
 
-    public Purchase getPurchase() {
-        return purchase;
-    }
+    public Long getAlbumId() { return albumId; }
+    public void setAlbumId(Long albumId) { this.albumId = albumId; }
 
-    public void setPurchase(Purchase purchase) {
-        this.purchase = purchase;
-    }
+    public String getAlbumName() { return albumName; }
+    public void setAlbumName(String albumName) { this.albumName = albumName; }
 
-    public Long getAlbumId() {
-        return albumId;
-    }
+    public BigDecimal getPrice() { return price; }
+    public void setPrice(BigDecimal price) { this.price = price; }
 
-    public void setAlbumId(Long albumId) {
-        this.albumId = albumId;
-    }
+    public String getCoverUrl() { return coverUrl; }
+    public void setCoverUrl(String coverUrl) { this.coverUrl = coverUrl; }
 
-    public String getAlbumName() {
-        return albumName;
-    }
+    public String getFileKey() { return fileKey; }
+    public void setFileKey(String fileKey) { this.fileKey = fileKey; }
 
-    public void setAlbumName(String albumName) {
-        this.albumName = albumName;
-    }
+    public String getPreviewUrl() { return previewUrl; }
+    public void setPreviewUrl(String previewUrl) { this.previewUrl = previewUrl; }
 
-    public BigDecimal getPrice() {
-        return price;
-    }
+    public String getDownloadToken() { return downloadToken; }
+    public void setDownloadToken(String downloadToken) { this.downloadToken = downloadToken; }
 
-    public void setPrice(BigDecimal price) {
-        this.price = price;
-    }
+    public int getDownloadCount() { return downloadCount; }
+    public void setDownloadCount(int downloadCount) { this.downloadCount = downloadCount; }
 
-    public String getCoverUrl() {
-        return coverUrl;
-    }
-
-    public void setCoverUrl(String coverUrl) {
-        this.coverUrl = coverUrl;
-    }
-
-    public String getFileKey() {
-        return fileKey;
-    }
-
-    public void setFileKey(String fileKey) {
-        this.fileKey = fileKey;
-    }
-
-    public String getPreviewUrl() {
-        return previewUrl;
-    }
-
-    public void setPreviewUrl(String previewUrl) {
-        this.previewUrl = previewUrl;
-    }
-
-    public String getDownloadToken() {
-        return downloadToken;
-    }
-
-    public void setDownloadToken(String downloadToken) {
-        this.downloadToken = downloadToken;
-    }
-
-    public int getDownloadCount() {
-        return downloadCount;
-    }
-
-    public void setDownloadCount(int downloadCount) {
-        this.downloadCount = downloadCount;
-    }
-
-    public int getMaxDownloads() {
-        return maxDownloads;
-    }
-
-    public void setMaxDownloads(int maxDownloads) {
-        this.maxDownloads = maxDownloads;
-    }
+    public int getMaxDownloads() { return maxDownloads; }
+    public void setMaxDownloads(int maxDownloads) { this.maxDownloads = maxDownloads; }
 }

@@ -5,6 +5,7 @@ import pl.freemusic.freemusic.model.Album;
 import pl.freemusic.freemusic.repository.AlbumRepository;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 public class AlbumService {
@@ -21,6 +22,6 @@ public class AlbumService {
 
     public Album getAlbum(Long id) {
         return albumRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Album not found: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Album not found: " + id));
     }
 }

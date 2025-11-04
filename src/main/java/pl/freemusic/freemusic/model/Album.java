@@ -11,6 +11,13 @@ public class Album {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /**
+     * Slug/klucz zgodny z frontem (np. "italian1", "greek_christmas").
+     * Unikalny, niezmienny identyfikator biznesowy.
+     */
+    @Column(nullable = false, unique = true, length = 100)
+    private String slug;
+
     private String name;
     private String genre;
 
@@ -20,14 +27,19 @@ public class Album {
     private BigDecimal price;
     private String coverUrl;
     private String previewUrl;
+
+    /**
+     * Ścieżka/klucz do ZIP-a (np. "italian1.zip").
+     * Łączymy z app.files.root podczas pobierania.
+     */
     private String fileKey;
 
-    public Album() {
-    }
+    public Album() {}
 
-    public Album(Long id, String name, String genre, String description, BigDecimal price,
+    public Album(Long id, String slug, String name, String genre, String description, BigDecimal price,
                  String coverUrl, String previewUrl, String fileKey) {
         this.id = id;
+        this.slug = slug;
         this.name = name;
         this.genre = genre;
         this.description = description;
@@ -39,6 +51,9 @@ public class Album {
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+
+    public String getSlug() { return slug; }
+    public void setSlug(String slug) { this.slug = slug; }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }

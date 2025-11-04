@@ -26,7 +26,7 @@ public class PurchaseService {
     private final AlbumRepository albumRepo;
 
     @Value("${app.files.root:./files}")
-    private String filesRoot; // katalog bazowy z ZIP-ami, np. /opt/musicfiles
+    private String filesRoot; // katalog bazowy z ZIP-ami
 
     public PurchaseService(PurchaseRepository purchaseRepo,
                            PurchaseItemRepository itemRepo,
@@ -44,7 +44,6 @@ public class PurchaseService {
 
         Purchase p = new Purchase();
 
-        // Dane kupującego / fakturowe (dopasowane do Twoich pól)
         if (req.buyer != null) {
             p.setCustomerEmail(req.buyer.email);
             p.setUserId(req.buyer.userId);
@@ -55,51 +54,47 @@ public class PurchaseService {
             p.setBillingCity(req.buyer.city);
             p.setBillingContactName(req.buyer.contactName);
         }
-
-        // Dane licencji (lokal)
         if (req.license != null) {
             p.setVenueName(req.license.venueName);
             p.setVenueAddress(req.license.venueAddress);
         }
 
-        if (p.getCreatedAt() == null) {
-            p.setCreatedAt(LocalDateTime.now());
-        }
-        if (p.getValidUntil() == null) {
-            // np. 12 miesięcy licencji
-            p.setValidUntil(p.getCreatedAt().plusMonths(12));
-        }
+        if (p.getCreatedAt() == null) p.setCreatedAt(LocalDateTime.now());
+        if (p.getValidUntil() == null) p.setValidUntil(p.getCreatedAt().plusMonths(12));
 
         BigDecimal total = BigDecimal.ZERO;
 
-        // Tworzymy pozycje zamówienia
         for (CheckoutRequest.CartItemDTO ci : req.items) {
-            Album album = albumRepo.findById(ci.albumId)
-                    .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono albumu: " + ci.albumId));
+            Album album;
+
+            if (ci.albumSlug != null && !ci.albumSlug.isBlank()) {
+                album = albumRepo.findBySlug(ci.albumSlug)
+                        .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono albumu o slug: " + ci.albumSlug));
+            } else if (ci.albumId != null) {
+                album = albumRepo.findById(ci.albumId)
+                        .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono albumu o id: " + ci.albumId));
+            } else {
+                throw new IllegalArgumentException("Pozycja koszyka wymaga albumSlug lub albumId.");
+            }
 
             PurchaseItem pi = new PurchaseItem();
             pi.setAlbumId(album.getId());
             pi.setAlbumName(album.getName());
             pi.setPrice(album.getPrice());
             pi.setCoverUrl(album.getCoverUrl());
-            pi.setFileKey(album.getFileKey());         // np. "albums/greek1.zip"
+            pi.setFileKey(album.getFileKey());
             pi.setPreviewUrl(album.getPreviewUrl());
             pi.setMaxDownloads(5);
 
             p.addItem(pi);
-            if (album.getPrice() != null) {
-                total = total.add(album.getPrice());
-            }
+            if (album.getPrice() != null) total = total.add(album.getPrice());
         }
 
         p.setTotalAmount(total);
-
-        // ✅ MVP: oznaczamy jako opłacone od razu (dopóki nie podepniemy bramki płatności)
         p.setPaid(true);
 
-        purchaseRepo.save(p); // kaskadowo zapisze też itemy
+        purchaseRepo.save(p);
 
-        // Odpowiedź
         CheckoutResponse res = new CheckoutResponse();
         res.purchaseId = p.getId();
         res.paid = p.isPaid();
@@ -110,7 +105,7 @@ public class PurchaseService {
             il.itemId = pi.getId();
             il.albumId = pi.getAlbumId();
             il.albumName = pi.getAlbumName();
-            il.downloadToken = pi.getDownloadToken(); // w MVP od razu zwracamy
+            il.downloadToken = pi.getDownloadToken();
             return il;
         }).collect(Collectors.toList());
 
@@ -119,10 +114,10 @@ public class PurchaseService {
 
     @Transactional(readOnly = true)
     public PurchaseItem resolveDownload(String token) {
-        PurchaseItem item = itemRepo.findByDownloadToken(token)
+        var item = itemRepo.findByDownloadToken(token)
                 .orElseThrow(() -> new IllegalArgumentException("Nieprawidłowy token pobierania."));
 
-        Purchase purchase = item.getPurchase();
+        var purchase = item.getPurchase();
         if (purchase == null) throw new IllegalStateException("Pozycja nie ma powiązanego zamówienia.");
         if (!purchase.isPaid()) throw new IllegalStateException("Zamówienie nieopłacone.");
         if (purchase.getValidUntil() != null && LocalDateTime.now().isAfter(purchase.getValidUntil())) {
